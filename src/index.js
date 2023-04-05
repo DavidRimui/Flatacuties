@@ -1,64 +1,107 @@
-// Your code here
+document.addEventListener("DOMContentLoaded", (e) => {
+  const navBar = document.getElementById("character-bar");
+  function getCharacterDetails() {
+    return fetch("http://localhost:3000/characters")
+      .then((res) => res.json())
+      .then((characters) => {
+        // console.log(characters);
+        characters.forEach((character) => {
+          const characterView = document.createElement("span");
+          navBar.appendChild(characterView);
+          characterView.id = character.id;
+          characterView.innerText = character.name;
+          characterView.style.cursor = "pointer";
 
-const baseUrl = "http://localhost:3000/characters";
+          characterView.addEventListener("click", (e) => {
+            // e.preventDefault();
+            const characterName = document.getElementById("name");
+            characterName.innerText = character.name;
+            const characterImage = document.getElementById("image");
+            characterImage.src = character.image;
 
-//Fetch names
-function fetchCharacterNames (){
-    return fetch(baseUrl)
-    .then(response => response.json())
-}
+            const currentVotes = document.getElementById("vote-count");
+            currentVotes.innerText = character.votes;
 
-function renderCharacterNames(character){
-    const characterBAr = document.getElementById("character-bar");
-    const span = document.createElement("span");
-    span.innerHTML = character.name;
-    characterBAr.appendChild(span);
-    span.dataset.id = character.id;
-    span.addEventListener("click, onSpanCharacterClick");
-};
+            // form for submitting votes ,sets votes input value to be displayed
+            const form = document.getElementById("votes-form");
+            form.addEventListener("submit", (e) => {
+              e.preventDefault();
+              const votes = document.getElementById("votes").value;
+              if (isNaN(votes) === false) {
+                currentVotes.innerText = votes;
+                // form.reset();
+              } else {
+                alert("Votes can only be in numbers");
+                form.reset();
+              }
+              console.log(votes);
 
-fetchCharacterNames().then(characters => {
-    characters.forEach(character => {
-        renderCharacterNames(character);
-    })
-})
-
-//Fetching charac details
-function fetchCharacterDetails (id) {
-    return fetch(baseUrl + `/${id}`)
-    .then(response => response.json())
-}
-
-function onSpanCharacterClick (event) {
-    fetchCharacterDetails(event.target.dataset.id)
-    .then(renderCharacterDetails);
-}
-
-function renderCharacterDetails(character) {
-    const characterInfo = document.getElementById("detailed-info");
-    const charName = document.getElementById("name");
-    charName.innerText = character.name
-
-    const charImg = document.getElementById("image");
-    charImg.src = character.image
-
-    const charVotes = document.getElementById("vote-count");
-    charVotes.innerText = character.votes
-}
-
-//Form submission & updating votes
-document.getElementById("votes-form").addEventListener("submit", (event) => ({event.preventDefault();
-    const votesForm = event.target;
-    const votes = document.getElementById("vote-count")
-    votes.innerText = parseInt(votesForm.votes.value) + parseInt(votes.innervotesForm.reset())
-})
-
-//Reset button
-document.getElementById("reset-btn").addEventListener("click", () => {
-    document.getElementById("vote-count").innerText = 0;
-})
-
-document.addEventListener("DOMContentLoaded", function () {
-    fetchCharacterNames();
-    fetchCharacterDetails();
-})
+              // resets vote count to zero
+              const resetButton = document.getElementById("reset-btn");
+              resetButton.addEventListener("click", (e) => {
+                e.preventDefault();
+                currentVotes.innerText = 0;
+              });
+            });
+          });
+          // Adding a new character using POST
+          const newCharacter = document.getElementById("character-form");
+          newCharacter.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const newCharacterName = document.getElementById("name2").value;
+            const newCharacterImage =
+              document.getElementById("image-url").value;
+            const addedCharacter = document.createElement("span");
+            addedCharacter.style.cursor = "pointer";
+            addedCharacter.innerText = newCharacterName;
+            navBar.appendChild(addedCharacter);
+            addedCharacter.addEventListener("click", () => {
+              const newCharacterTitle = document.getElementById("name");
+              newCharacterTitle.innerText = newCharacterName;
+              const addCharacterImage = document.getElementById("image");
+              addCharacterImage.src = newCharacterImage;
+              const newCharactersCurrentVotes =
+                document.getElementById("vote-count");
+              newCharactersCurrentVotes.innerText = 0;
+              const newCharacterCurrentVotes =
+                document.getElementById("vote-count");
+              newCharacterCurrentVotes.innerText = 0;
+              const form = document.getElementById("votes-form");
+              form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const votes = document.getElementById("votes").value;
+                if (isNaN(votes) === false) {
+                  newCharacterCurrentVotes.innerText = votes;
+                  form.reset();
+                } else {
+                  alert("Votes can only be in numbers");
+                  form.reset();
+                }
+              });
+              const reset = document.getElementById("reset-btn");
+              reset.addEventListener("click", (e) => {
+                e.preventDefault();
+                newCharacterCurrentVotes.innerText = 0;
+              });
+              function updateNewCharacter() {
+                return fetch("http://localhost:3000/characters", {
+                  method: "POST",
+                  headers: {
+                    "content-Type": "application/json",
+                    Accept: "application/json",
+                  },
+                  body: JSON.stringify({
+                    name: newCharacterName,
+                    image: newCharacterImage,
+                    votes: 0,
+                  }),
+                });
+              }
+              updateNewCharacter();
+            });
+          });
+        });
+      });
+  }
+  getCharacterDetails();
+});
